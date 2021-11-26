@@ -514,25 +514,24 @@ def set_format(fmt="xml"):
         raise ValueError("invalid format: %s" % fmt)
 
 
-def _safe_read(request):
+def _safe_read(request, session=requests.Session()):
     """
     :param request:
     """
     # Make request (with retries).
-    with requests.Session() as session:
-        adapter = requests.adapters.HTTPAdapter(max_retries=_retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        try:
-            resp = session.send(request.prepare(), allow_redirects=True)
-            resp.raise_for_status()
-            return resp
-        except requests.HTTPError as exc:
-            if exc.response.status_code == 401:
-                raise AuthenticationError(cause=exc)
-            raise ResponseError(cause=exc)
-        except requests.RequestException as exc:
-            raise NetworkError(cause=exc)
+    adapter = requests.adapters.HTTPAdapter(max_retries=_retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    try:
+        resp = session.send(request.prepare(), allow_redirects=True)
+        resp.raise_for_status()
+        return resp
+    except requests.HTTPError as exc:
+        if exc.response.status_code == 401:
+            raise AuthenticationError(cause=exc)
+        raise ResponseError(cause=exc)
+    except requests.RequestException as exc:
+        raise NetworkError(cause=exc)
 
 @_rate_limit
 def _mb_request(path, method='GET', auth_required=AUTH_NO,
