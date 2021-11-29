@@ -26,26 +26,7 @@ _version = "0.7.1"
 _log = logging.getLogger("musicbrainzngs")
 
 
-class MBRetry(Retry):
-    """Retry class whose backoff time is::
-
-         { number of observed errors } * 2.0
-
-    """
-
-    def get_backoff_time(self):
-        """ Formula for computing the current backoff
-
-        :rtype: float
-        """
-        if self._observed_errors == 0:
-            return 0
-
-        return self._observed_errors * 2.0
-
-
-_retry = MBRetry(total=8,
-                 status_forcelist=[500, 502, 503])
+_retry = Retry(total=8, backoff_factor=2, status_forcelist=[500, 502, 503])
 
 LUCENE_SPECIAL = r'([+\-&|!(){}\[\]\^"~*?:\\\/])'
 
